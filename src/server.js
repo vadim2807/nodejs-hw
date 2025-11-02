@@ -18,15 +18,15 @@ app.get('/notes', (req, res) => {
   });
 });
 
+app.get('/test-error', () => {
+  throw new Error('Simulated server error');
+});
+
 app.get('/notes/:noteId', (req, res) => {
   const { noteId } = req.params;
   res.status(200).json({
     message: `Retrieved note with ID: ${noteId}`,
   });
-});
-
-app.get('/test-error', () => {
-  throw new Error('Simulated server error');
 });
 
 // 404 Middleware
