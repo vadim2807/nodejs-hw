@@ -9,7 +9,21 @@ const PORT = process.env.PORT ?? 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(pinoHttp());
+app.use(
+  pinoHttp({
+    level: 'info',
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: 'HH:MM:ss',
+        ignore: 'pid,hostname',
+        messageFormat: '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
+        hideObject: true,
+      },
+    },
+  }),
+);
 
 // Routes
 app.get('/notes', (req, res) => {
