@@ -21,7 +21,7 @@ export const registerUser = async (req, res, next) => {
     });
 
     const newSession = await createSession(newUser._id);
-    setSessionCookies(res, newSession);
+    setSessionCookies(res, newSession, req);
 
     res.status(201).json(newUser);
   } catch (error) {
@@ -46,7 +46,7 @@ export const loginUser = async (req, res, next) => {
     await Session.deleteOne({ userId: user._id });
 
     const newSession = await createSession(user._id);
-    setSessionCookies(res, newSession);
+    setSessionCookies(res, newSession, req);
 
     res.status(200).json(user);
   } catch (error) {
@@ -92,7 +92,7 @@ export const refreshUserSession = async (req, res, next) => {
     });
 
     const newSession = await createSession(session.userId);
-    setSessionCookies(res, newSession);
+    setSessionCookies(res, newSession, req);
 
     res.status(200).json({
       message: 'Session refreshed',

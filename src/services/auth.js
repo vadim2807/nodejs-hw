@@ -15,25 +15,29 @@ export const createSession = async (userId) => {
   });
 };
 
-export const setSessionCookies = (res, session) => {
+export const setSessionCookies = (res, session, req) => {
+  // Проверяем, является ли хост localhost
+  const host = req?.headers?.host || res.req?.headers?.host || '';
+  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+  
   res.cookie('accessToken', session.accessToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: !isLocalhost,
+    sameSite: isLocalhost ? 'lax' : 'none',
     maxAge: FIFTEEN_MINUTES,
   });
 
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: !isLocalhost,
+    sameSite: isLocalhost ? 'lax' : 'none',
     maxAge: ONE_DAY,
   });
 
   res.cookie('sessionId', session._id, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: !isLocalhost,
+    sameSite: isLocalhost ? 'lax' : 'none',
     maxAge: ONE_DAY,
   });
 };
