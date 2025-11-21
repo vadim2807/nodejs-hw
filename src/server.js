@@ -11,7 +11,7 @@ import notesRoutes from './routes/notesRoutes.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT ?? 3030;
 
 const app = express();
 
