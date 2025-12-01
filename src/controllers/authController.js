@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import handlebars from 'handlebars';
 import { User } from '../models/user.js';
 import { Session } from '../models/session.js';
@@ -116,7 +116,7 @@ export const requestResetEmail = async (req, res, next) => {
 
     if (!user) {
       return res.status(200).json({
-        message: 'Password reset email sent successfully',
+        message: 'If this email exists, a reset link has been sent',
       });
     }
 
@@ -130,25 +130,31 @@ export const requestResetEmail = async (req, res, next) => {
 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const templatePath = join(__dirname, '../templates/reset-password-email.html');
-    const templateSource = readFileSync(templatePath, 'utf-8');
+    const templatePath = join(
+      __dirname,
+      '../templates/reset-password-email.html',
+    );
+    const templateSource = await readFile(templatePath, 'utf-8');
     const template = handlebars.compile(templateSource);
 
     const html = template({
-      username: user.username || user.email,
-      resetLink,
+      name: user.username || user.email,
+      link: resetLink,
     });
 
     try {
-      await sendEmail(user.email, 'Скидання паролю', html);
-      console.log(`✅ Email sent successfully to ${user.email}`);
+      await sendEmail(user.email, 'Reset your password', html);
     } catch (emailError) {
-      console.error('❌ Email sending error:', emailError);
-      return next(createHttpError(500, 'Failed to send the email, please try again later.'));
+      return next(
+        createHttpError(
+          500,
+          'Failed to send the email, please try again later.',
+        ),
+      );
     }
 
     res.status(200).json({
-      message: 'Password reset email sent successfully',
+      message: 'If this email exists, a reset link has been sent',
     });
   } catch (error) {
     next(error);
@@ -177,14 +183,14 @@ export const resetPassword = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    user.password = hashedPassword;
-    await user.save();
+    await User.updateOne({ _id: user._id }, { password: hashedPassword });
+
+    await Session.deleteMany({ userId: user._id });
 
     res.status(200).json({
-      message: 'Password reset successfully',
+      message: 'Password reset successfully. Please log in again.',
     });
   } catch (error) {
     next(error);
   }
 };
-

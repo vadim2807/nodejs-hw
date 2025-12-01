@@ -18,13 +18,6 @@ export const sendEmail = async (to, subject, html) => {
     html,
   };
 
-  console.log('📧 Attempting to send email:', {
-    from: process.env.SMTP_FROM,
-    to,
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-  });
-
   return transporter.sendMail(mailOptions);
 };
 
