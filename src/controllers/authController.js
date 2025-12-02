@@ -60,18 +60,22 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-export const logoutUser = async (req, res) => {
-  const { sessionId } = req.cookies;
+export const logoutUser = async (req, res, next) => {
+  try {
+    const { sessionId } = req.cookies;
 
-  if (sessionId) {
-    await Session.deleteOne({ _id: sessionId });
+    if (sessionId) {
+      await Session.deleteOne({ _id: sessionId });
+    }
+
+    res.clearCookie('sessionId');
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
   }
-
-  res.clearCookie('sessionId');
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
-
-  res.status(204).send();
 };
 
 export const refreshUserSession = async (req, res, next) => {
@@ -143,7 +147,11 @@ export const requestResetEmail = async (req, res, next) => {
     });
 
     try {
-      await sendEmail(user.email, 'Reset your password', html);
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset your password',
+        html,
+      });
     } catch (emailError) {
       return next(
         createHttpError(
